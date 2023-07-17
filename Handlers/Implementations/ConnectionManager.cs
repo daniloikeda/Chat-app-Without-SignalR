@@ -1,14 +1,13 @@
-﻿using Microsoft.AspNetCore.Http;
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 using System.Net.WebSockets;
 
-namespace Chat.Server.WebSocketsHandler
+namespace Chat.Server.Handlers.Implementations
 {
-    public class WebSocketManager: IWebSocketManager
+    public class ConnectionManager : IConnectionManager
     {
-        private ConcurrentDictionary<string, WebSocket> _connections;
+        private readonly ConcurrentDictionary<string, WebSocket> _connections;
 
-        public WebSocketManager()
+        public ConnectionManager()
         {
             _connections = new ConcurrentDictionary<string, WebSocket>();
         }

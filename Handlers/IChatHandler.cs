@@ -1,8 +1,8 @@
 ﻿using System.Net.WebSockets;
 
-namespace Chat.Server.WebSocketsHandler
+namespace Chat.Server.Handlers
 {
-    public interface IMessageHandler
+    public interface IChatHandler
     {
         Task StartChat(WebSocket webSocket);
     }

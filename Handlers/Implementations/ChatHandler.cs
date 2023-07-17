@@ -1,15 +1,15 @@
 ﻿using System.Text;
 using System.Net.WebSockets;
 
-namespace Chat.Server.WebSocketsHandler
+namespace Chat.Server.Handlers.Implementations
 {
-    public class MessageHandler: IMessageHandler
+    public class ChatHandler : IChatHandler
     {
-        private readonly IWebSocketManager _socketManager;
+        private readonly IConnectionManager _socketManager;
 
         private string ClientName { get; set; }
-        
-        public MessageHandler(IWebSocketManager socketManager)
+
+        public ChatHandler(IConnectionManager socketManager)
         {
             _socketManager = socketManager;
             ClientName = "";
@@ -38,7 +38,7 @@ namespace Chat.Server.WebSocketsHandler
             var receivedResult = await ReceiveMessage(webSocket, buffer);
 
             ClientName = Encoding.ASCII.GetString(buffer);
-            
+
             await SendMessage(webSocket, $"Bem-vindo {ClientName}!");
 
             await SendMessageToEveryone(ClientName, $"{ClientName} entrou no chat!");
@@ -47,7 +47,7 @@ namespace Chat.Server.WebSocketsHandler
 
             return receivedResult;
         }
-        
+
         private async Task SendMessageToEveryone(string from, string message)
         {
             var clientsWebSockets = _socketManager.GetClientsSocket(from).ToList();

@@ -1,8 +1,8 @@
 ﻿using System.Net.WebSockets;
 
-namespace Chat.Server.WebSocketsHandler
+namespace Chat.Server.Handlers
 {
-    public interface IWebSocketManager
+    public interface IConnectionManager
     {
         bool AddConnection(string name, WebSocket connection);
 
