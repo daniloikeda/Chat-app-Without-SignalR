@@ -1,4 +1,5 @@
-﻿using Chat.Server.Configuration.Middleware;
+﻿using System.Net.WebSockets;
+using Chat.Server.Configuration.Middleware;
 
 namespace Chat.Server.Configuration
 {

@@ -11,25 +11,40 @@ namespace Chat.Server.Handlers.Implementations
         {
             _connections = new ConcurrentDictionary<string, WebSocket>();
         }
-
-        public bool AddConnection(string name, WebSocket connection)
+        
+        public string? AddConnection(WebSocket webSocket)
         {
-            return _connections.TryAdd(name, connection);
+            if (IsConnectionRegistered(webSocket))
+            {
+                return GetConnectionId(webSocket);
+            }
+
+            var connectionId = CreateConnectionId();
+            return !_connections.TryAdd(connectionId, webSocket) ? null : connectionId;
         }
 
-        public bool RemoveConnection(string name)
+        public bool RemoveConnection(string guid)
         {
-            return _connections.TryRemove(name, out _);
+            return _connections.TryRemove(guid, out _);
         }
 
-        public WebSocket GetById(string name)
+        public IEnumerable<WebSocket> GetAll()
         {
-            return _connections[name];
+            return _connections.Select(_ => _.Value);
         }
 
-        public IEnumerable<WebSocket> GetClientsSocket(string? exceptClient = null)
+        public WebSocket? GetConnectionById(string guid)
         {
-            return exceptClient == null ? _connections.Select(_ => _.Value) : _connections.Where(_ => _.Key != exceptClient).Select(_ => _.Value);
+            return _connections.TryGetValue(guid, out var webSocket) ? webSocket : null;
         }
+
+        public string GetConnectionId(WebSocket webSocket)
+        {
+            return _connections.FirstOrDefault(_ => _.Value == webSocket).Key;
+        }
+
+        private bool IsConnectionRegistered(WebSocket webSocket) => _connections.Any(_ => _.Value == webSocket);
+
+        private static string CreateConnectionId() => Guid.NewGuid().ToString();
     }
 }

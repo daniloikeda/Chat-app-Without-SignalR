@@ -4,12 +4,14 @@ namespace Chat.Server.Handlers
 {
     public interface IConnectionManager
     {
-        bool AddConnection(string name, WebSocket connection);
+        string? AddConnection(WebSocket webSocket);
 
-        WebSocket GetById(string name);
+        bool RemoveConnection(string guid);
 
-        IEnumerable<WebSocket> GetClientsSocket(string? exceptClient = null);
+        IEnumerable<WebSocket> GetAll();
 
-        bool RemoveConnection(string name);
+        WebSocket? GetConnectionById(string guid);
+
+        string GetConnectionId(WebSocket webSocket);
     }
 }

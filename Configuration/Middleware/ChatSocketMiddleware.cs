@@ -1,4 +1,5 @@
-﻿using Chat.Server.Handlers;
+﻿using System.Net.WebSockets;
+using Chat.Server.Handlers;
 
 namespace Chat.Server.Configuration.Middleware
 {
@@ -6,15 +7,16 @@ namespace Chat.Server.Configuration.Middleware
     {
         private readonly RequestDelegate _next;
 
+        private IWebSocketHandler _chatHandler;
+
         public ChatSocketMiddleware(RequestDelegate next)
         {
             _next = next;
         }
 
-        public async Task InvokeAsync(HttpContext httpContext)
+        public async Task InvokeAsync(HttpContext httpContext, IWebSocketHandler chatHandler)
         {
-            var scoped = httpContext.RequestServices.CreateScope();
-            var chatHandler = scoped.ServiceProvider.GetRequiredService<IChatHandler>();
+            _chatHandler = chatHandler;
 
             if (httpContext.Request.Path != "/chat")
                 await _next.Invoke(httpContext);
@@ -22,7 +24,29 @@ namespace Chat.Server.Configuration.Middleware
             if (httpContext.WebSockets.IsWebSocketRequest)
             {
                 using var webSocket = await httpContext.WebSockets.AcceptWebSocketAsync();
-                await chatHandler.StartChat(webSocket);
+                _chatHandler.OnConnected(webSocket);
+                var clientName = await GetClientNameAsync(webSocket);
+                await ListenToClient(webSocket, clientName);
+            }
+        }
+
+        public async Task<string> GetClientNameAsync(WebSocket webSocket)
+        {
+            await _chatHandler.SendMessage(webSocket, "Qual o seu nome ?");
+            var clientName = await _chatHandler.ReceiveMessage(webSocket);
+            await _chatHandler.SendMessageToAll($"~{clientName} entrou no chat!");
+
+            return clientName;
+        }
+
+        public async Task ListenToClient(WebSocket webSocket, string clientName)
+        {
+            while (webSocket.State == WebSocketState.Open)
+            {
+                var message = await _chatHandler.ReceiveMessage(webSocket);
+
+                message = $"{clientName}: {message}";
+                await _chatHandler.SendMessageToAll(message);
             }
         }
     }
